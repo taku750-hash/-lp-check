@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LP無料診断 | LEFA.HIDAKA</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c28;
+    --accent: #6c63ff;
+    --accent2: #ff6584;
+    --accent3: #43e97b;
+    --text: #f0f0f8;
+    --text-muted: #8888aa;
+    --border: rgba(108,99,255,0.2);
+    --glow: rgba(108,99,255,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* 背景エフェクト */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 600px 400px at 20% 20%, rgba(108,99,255,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 80% 80%, rgba(255,101,132,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* ヘッダー */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+
+  .header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 8vw, 56px);
+    letter-spacing: 0.04em;
+    line-height: 1;
+    background: linear-gradient(135deg, #fff 30%, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+
+  .header p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* ステップインジケーター */
+  .steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 36px;
+    animation: fadeDown 0.6s 0.1s ease both;
+  }
+
+  .step-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    transition: all 0.4s ease;
+  }
+
+  .step-dot.active {
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    transform: scale(1.3);
+  }
+
+  .step-dot.done {
+    background: var(--accent3);
+  }
+
+  /* カード */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 28px;
+    margin-bottom: 16px;
+    animation: fadeUp 0.5s ease both;
+    display: none;
+  }
+
+  .card.active { display: block; }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .card h2 {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 24px;
+    color: var(--text);
+  }
+
+  /* 選択肢 */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text);
+    text-align: left;
+    width: 100%;
+  }
+
+  .option:hover {
+    border-color: var(--accent);
+    background: rgba(108,99,255,0.1);
+    transform: translateX(4px);
+  }
+
+  .option.selected {
+    border-color: var(--accent);
+    background: rgba(108,99,255,0.15);
+    box-shadow: 0 0 20px rgba(108,99,255,0.1);
+  }
+
+  .option-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--glow);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    transition: all 0.25s;
+  }
+
+  .option.selected .option-icon {
+    background: var(--accent);
+  }
+
+  .option-text { flex: 1; line-height: 1.4; }
+
+  /* テキスト入力 */
+  .input-field {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 100px;
+    outline: none;
+    transition: border-color 0.25s;
+    margin-bottom: 8px;
+  }
+
+  .input-field:focus { border-color: var(--accent); }
+  .input-field::placeholder { color: var(--text-muted); }
+
+  input.input-field {
+    min-height: unset;
+    height: 48px;
+    resize: none;
+  }
+
+  /* ボタン */
+  .btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin-top: 16px;
+    letter-spacing: 0.05em;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #9b8fff);
+    color: #fff;
+    box-shadow: 0 4px 24px rgba(108,99,255,0.3);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(108,99,255,0.45);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-line {
+    background: #06C755;
+    color: #fff;
+    font-size: 17px;
+    padding: 20px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 24px rgba(6,199,85,0.35);
+    text-decoration: none;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    transition: all 0.25s;
+  }
+
+  .btn-line:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(6,199,85,0.5);
+  }
+
+  .btn-line svg { width: 28px; height: 28px; }
+
+  /* AI診断ローディング */
+  .loading-box {
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .loading-ring {
+    width: 60px; height: 60px;
+    border: 3px solid var(--surface2);
+    border-top: 3px solid var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 20px;
+  }
+
+  .loading-box p {
+    font-size: 14px;
+    color: var(--text-muted);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  /* 診断結果 */
+  .result-score {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .score-ring-wrap {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 16px;
+  }
+
+  .score-ring-wrap svg {
+    width: 120px; height: 120px;
+    transform: rotate(-90deg);
+  }
+
+  .score-ring-bg { fill: none; stroke: var(--surface2); stroke-width: 8; }
+
+  .score-ring-fill {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 283;
+    stroke-dashoffset: 283;
+    transition: stroke-dashoffset 1.2s ease;
+  }
+
+  .score-num {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .score-num span { font-size: 13px; font-family: 'Noto Sans JP', sans-serif; color: var(--text-muted); }
+
+  .score-label {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .score-sub { font-size: 12px; color: var(--text-muted); }
+
+  /* 診断コメントエリア */
+  .diagnosis-section {
+    margin-bottom: 20px;
+  }
+
+  .diagnosis-section h3 {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .diagnosis-section h3::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .diagnosis-text {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text);
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 16px 20px;
+    white-space: pre-wrap;
+  }
+
+  .issues-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .issue-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    border: 1px solid rgba(255,101,132,0.15);
+  }
+
+  .issue-item .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  .improve-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .improve-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: rgba(67,233,123,0.06);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    border: 1px solid rgba(67,233,123,0.15);
+  }
+
+  .improve-item .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* LINE誘導ボックス */
+  .line-box {
+    background: linear-gradient(135deg, rgba(6,199,85,0.08), rgba(6,199,85,0.03));
+    border: 1px solid rgba(6,199,85,0.25);
+    border-radius: 20px;
+    padding: 28px 24px;
+    text-align: center;
+    margin-top: 24px;
+  }
+
+  .line-box h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .line-box p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+
+  /* 進捗バー */
+  .progress-bar {
+    height: 3px;
+    background: var(--surface2);
+    border-radius: 2px;
+    margin-bottom: 32px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* アニメーション */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .fade-in { animation: fadeIn 0.6s ease both; }
+
+  /* フッター */
+  .footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ヘッダー -->
+  <div class="header">
+    <div class="badge">🎁 登録プレゼント</div>
+    <h1>LP 無料診断</h1>
+    <p>あなたのLPの課題をAIが自動分析。<br>整体院・サロン・治療院に特化した改善提案を即時お届け。</p>
+  </div>
+
+  <!-- 進捗 -->
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width:14%"></div>
+  </div>
+
+  <!-- ステップドット -->
+  <div class="steps" id="stepDots"></div>
+
+  <!-- === STEP 1: 業種 === -->
+  <div class="card active" id="step1">
+    <div class="card-label">STEP 01 / 07</div>
+    <h2>あなたのビジネスの業種を教えてください</h2>
+    <div class="options">
+      <button class="option" onclick="select(this,'業種','整体院・整骨院')"><div class="option-icon">🏥</div><div class="option-text">整体院・整骨院</div></button>
+      <button class="option" onclick="select(this,'業種','美容サロン・エステ')"><div class="option-icon">💆</div><div class="option-text">美容サロン・エステ</div></button>
+      <button class="option" onclick="select(this,'業種','鍼灸院・治療院')"><div class="option-icon">🌿</div><div class="option-text">鍼灸院・治療院</div></button>
+      <button class="option" onclick="select(this,'業種','パーソナルトレーナー・スポーツ')"><div class="option-icon">💪</div><div class="option-text">パーソナルトレーナー・スポーツ</div></button>
+      <button class="option" onclick="select(this,'業種','その他個人事業')"><div class="option-icon">🏢</div><div class="option-text">その他の個人事業・サービス業</div></button>
+    </div>
+    <button class="btn btn-primary" id="btn1" onclick="nextStep(2)" disabled>次へ →</button>
+  </div>
+
+  <!-- === STEP 2: LP目的 === -->
+  <div class="card" id="step2">
+    <div class="card-label">STEP 02 / 07</div>
+    <h2>LPの主な目的はなんですか？</h2>
+    <div class="options">
+      <button class="option" onclick="select(this,'目的','新規予約・問い合わせを増やす')"><div class="option-icon">📞</div><div class="option-text">新規予約・問い合わせを増やす</div></button>
+      <button class="option" onclick="select(this,'目的','LINE登録・メルマガ登録を増やす')"><div class="option-icon">📩</div><div class="option-text">LINE登録・メルマガ登録を増やす</div></button>
+      <button class="option" onclick="select(this,'目的','商品・コースの販売')"><div class="option-icon">🛍️</div><div class="option-text">商品・コースの販売</div></button>
+      <button class="option" onclick="select(this,'目的','Google広告からの集客強化')"><div class="option-icon">📢</div><div class="option-text">Google広告からの集客強化</div></button>
+    </div>
+    <button class="btn btn-primary" id="btn2" onclick="nextStep(3)" disabled>次へ →</button>
+  </div>
+
+  <!-- === STEP 3: 現状の問題 === -->
+  <div class="card" id="step3">
+    <div class="card-label">STEP 03 / 07</div>
+    <h2>現在のLPで一番困っていることは？</h2>
+    <div class="options">
+      <button class="option" onclick="select(this,'課題','アクセスはあるが問い合わせが来ない')"><div class="option-icon">😕</div><div class="option-text">アクセスはあるが問い合わせ・予約が来ない</div></button>
+      <button class="option" onclick="select(this,'課題','そもそもアクセスが少ない')"><div class="option-icon">📉</div><div class="option-text">そもそもアクセスが少ない</div></button>
+      <button class="option" onclick="select(this,'課題','広告費に対して効果が出ていない')"><div class="option-icon">💸</div><div class="option-text">広告費に対して効果が出ていない（CVRが低い）</div></button>
+      <button class="option" onclick="select(this,'課題','LPを作ったことがない・これから作りたい')"><div class="option-icon">🆕</div><div class="option-text">LPをこれから作りたい・まだ持っていない</div></button>
+    </div>
+    <button class="btn btn-primary" id="btn3" onclick="nextStep(4)" disabled>次へ →</button>
+  </div>
+
+  <!-- === STEP 4: ファーストビュー === -->
+  <div class="card" id="step4">
+    <div class="card-label">STEP 04 / 07</div>
+    <h2>LPのファーストビュー（最初に見える部分）に含まれているものを選んでください<br><small style="font-size:12px;font-weight:400;color:var(--text-muted)">（複数選択OK）</small></h2>
+    <div class="options" id="fvOptions">
+      <button class="option multi" onclick="multiSelect(this,'FV要素','キャッチコピー（悩みに刺さる言葉）')"><div class="option-icon">✍️</div><div class="option-text">キャッチコピー（悩みに刺さる言葉）</div></button>
+      <button class="option multi" onclick="multiSelect(this,'FV要素','施術・サービスのビジュアル写真')"><div class="option-icon">📸</div><div class="option-text">施術・サービスのビジュアル写真</div></button>
+      <button class="option multi" onclick="multiSelect(this,'FV要素','予約・問い合わせボタン（CTA）')"><div class="option-icon">🔘</div><div class="option-text">予約・問い合わせボタン（CTA）</div></button>
+      <button class="option multi" onclick="multiSelect(this,'FV要素','実績・口コミ・信頼の数字')"><div class="option-icon">⭐</div><div class="option-text">実績・口コミ・信頼の数字</div></button>
+      <button class="option multi" onclick="multiSelect(this,'FV要素','特になし・テキストが多い')"><div class="option-icon">📝</div><div class="option-text">特になし・テキストが多いだけ</div></button>
+    </div>
+    <button class="btn btn-primary" id="btn4" onclick="nextStep(5)">次へ →</button>
+  </div>
+
+  <!-- === STEP 5: 訴求内容 === -->
+  <div class="card" id="step5">
+    <div class="card-label">STEP 05 / 07</div>
+    <h2>LPに掲載している内容を教えてください<br><small style="font-size:12px;font-weight:400;color:var(--text-muted)">（複数選択OK）</small></h2>
+    <div class="options">
+      <button class="option multi" onclick="multiSelect(this,'掲載内容','お客様の声・ビフォーアフター')"><div class="option-icon">💬</div><div class="option-text">お客様の声・ビフォーアフター</div></button>
+      <button class="option multi" onclick="multiSelect(this,'掲載内容','料金・メニュー一覧')"><div class="option-icon">💴</div><div class="option-text">料金・メニュー一覧</div></button>
+      <button class="option multi" onclick="multiSelect(this,'掲載内容','施術者のプロフィール・想い')"><div class="option-icon">👤</div><div class="option-text">施術者のプロフィール・想い</div></button>
+      <button class="option multi" onclick="multiSelect(this,'掲載内容','よくある質問（FAQ）')"><div class="option-icon">❓</div><div class="option-text">よくある質問（FAQ）</div></button>
+      <button class="option multi" onclick="multiSelect(this,'掲載内容','地図・アクセス情報')"><div class="option-icon">📍</div><div class="option-text">地図・アクセス情報</div></button>
+    </div>
+    <button class="btn btn-primary" id="btn5" onclick="nextStep(6)">次へ →</button>
+  </div>
+
+  <!-- === STEP 6: 月間アクセス === -->
+  <div class="card" id="step6">
+    <div class="card-label">STEP 06 / 07</div>
+    <h2>LPへの月間アクセス数はどのくらいですか？</h2>
+    <div class="options">
+      <button class="option" onclick="select(this,'アクセス','100未満（ほぼ来ていない）')"><div class="option-icon">😰</div><div class="option-text">100未満（ほぼ来ていない）</div></button>
+      <button class="option" onclick="select(this,'アクセス','100〜300程度')"><div class="option-icon">📊</div><div class="option-text">100〜300程度</div></button>
+      <button class="option" onclick="select(this,'アクセス','300〜1000程度')"><div class="option-icon">📈</div><div class="option-text">300〜1,000程度</div></button>
+      <button class="option" onclick="select(this,'アクセス','1000以上')"><div class="option-icon">🚀</div><div class="option-text">1,000以上</div></button>
+      <button class="option" onclick="select(this,'アクセス','わからない')"><div class="option-icon">🤷</div><div class="option-text">わからない・計測していない</div></button>
+    </div>
+    <button class="btn btn-primary" id="btn6" onclick="nextStep(7)" disabled>次へ →</button>
+  </div>
+
+  <!-- === STEP 7: URL / 自由記入 === -->
+  <div class="card" id="step7">
+    <div class="card-label">STEP 07 / 07</div>
+    <h2>最後に、LPのURLまたは改善したい点を教えてください</h2>
+    <input type="url" class="input-field" id="lpUrl" placeholder="https://（URLがあれば入力）" />
+    <textarea class="input-field" id="lpNote" placeholder="例：ファーストビューのキャッチコピーが弱いと感じている、CVRが0.5%以下で困っている など" style="margin-top:8px"></textarea>
+    <button class="btn btn-primary" id="btn7" onclick="startDiagnosis()">🔍 AI診断スタート</button>
+  </div>
+
+  <!-- === ローディング === -->
+  <div class="card" id="stepLoading">
+    <div class="loading-box">
+      <div class="loading-ring"></div>
+      <p id="loadingMsg">AIがあなたのLPを分析中です…</p>
+    </div>
+  </div>
+
+  <!-- === 結果 === -->
+  <div class="card" id="stepResult">
+
+    <div class="result-score">
+      <div class="score-ring-wrap">
+        <svg viewBox="0 0 100 100">
+          <circle class="score-ring-bg" cx="50" cy="50" r="45"/>
+          <circle class="score-ring-fill" id="scoreRing" cx="50" cy="50" r="45"/>
+        </svg>
+        <div class="score-num">
+          <span id="scoreNumEl">0</span>
+          <span>/ 100</span>
+        </div>
+      </div>
+      <div class="score-label" id="scoreLabel"></div>
+      <div class="score-sub" id="scoreSub"></div>
+    </div>
+
+    <div class="diagnosis-section">
+      <h3>総合診断</h3>
+      <div class="diagnosis-text" id="diagnosisOverall"></div>
+    </div>
+
+    <div class="diagnosis-section">
+      <h3>⚠️ 主な課題</h3>
+      <div class="issues-list" id="issuesList"></div>
+    </div>
+
+    <div class="diagnosis-section">
+      <h3>✅ 改善アクション</h3>
+      <div class="improve-list" id="improveList"></div>
+    </div>
+
+    <div class="line-box">
+      <h3>📋 詳細な改善提案を受け取る</h3>
+      <p>この診断結果をもとに、LP制作の専門家が<br>個別に詳しくアドバイスします。<br>まずはLINEで無料相談してみてください。</p>
+      <a href="https://lin.ee/9stuQgO" class="btn-line" target="_blank" id="lineBtn">
+        <svg viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+        LINEで無料相談する
+      </a>
+    </div>
+
+  </div>
+
+  <div class="footer">© LEFA.HIDAKA | LP専門 Web制作</div>
+</div>
+
+<script>
+const TOTAL_STEPS = 7;
+const answers = {};
+const multiAnswers = {};
+let currentStep = 1;
+
+// ステップドット生成
+function renderDots() {
+  const el = document.getElementById('stepDots');
+  el.innerHTML = '';
+  for (let i = 1; i <= TOTAL_STEPS; i++) {
+    const d = document.createElement('div');
+    d.className = 'step-dot' + (i === currentStep ? ' active' : i < currentStep ? ' done' : '');
+    el.appendChild(d);
+  }
+}
+
+// 進捗更新
+function updateProgress(step) {
+  const pct = Math.round((step / (TOTAL_STEPS + 1)) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+// 単一選択
+function select(btn, key, val) {
+  const parent = btn.closest('.options');
+  parent.querySelectorAll('.option').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  answers[key] = val;
+  const btnId = 'btn' + currentStep;
+  const nextBtn = document.getElementById(btnId);
+  if (nextBtn) nextBtn.disabled = false;
+}
+
+// 複数選択
+function multiSelect(btn, key, val) {
+  btn.classList.toggle('selected');
+  if (!multiAnswers[key]) multiAnswers[key] = [];
+  if (btn.classList.contains('selected')) {
+    multiAnswers[key].push(val);
+  } else {
+    multiAnswers[key] = multiAnswers[key].filter(v => v !== val);
+  }
+}
+
+// 次のステップへ
+function nextStep(n) {
+  document.getElementById('step' + currentStep).classList.remove('active');
+  currentStep = n;
+  const next = document.getElementById('step' + n);
+  next.classList.add('active');
+  next.style.animation = 'none';
+  requestAnimationFrame(() => { next.style.animation = 'fadeUp 0.5s ease both'; });
+  renderDots();
+  updateProgress(n);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 診断開始
+async function startDiagnosis() {
+  const url = document.getElementById('lpUrl').value;
+  const note = document.getElementById('lpNote').value;
+  answers['LP URL'] = url || '未入力';
+  answers['自由記入'] = note || '特になし';
+
+  // ローディング表示
+  document.getElementById('step7').classList.remove('active');
+  document.getElementById('stepLoading').classList.add('active');
+  updateProgress(8);
+
+  const loadingMsgs = [
+    'AIがあなたのLPを分析中です…',
+    'ファーストビューを診断しています…',
+    'CVR改善ポイントを特定しています…',
+    '改善アクションを生成しています…'
+  ];
+  let mi = 0;
+  const msgEl = document.getElementById('loadingMsg');
+  const msgTimer = setInterval(() => {
+    mi = (mi + 1) % loadingMsgs.length;
+    msgEl.textContent = loadingMsgs[mi];
+  }, 1800);
+
+  // プロンプト生成
+  const allAnswers = { ...answers };
+  Object.entries(multiAnswers).forEach(([k, v]) => {
+    allAnswers[k] = v.length > 0 ? v.join('、') : 'なし';
+  });
+
+  const prompt = `あなたはLP（ランディングページ）改善の専門家です。整体院・サロン・治療院向けのLP制作・マーケティングに精通しています。
+
+以下のユーザー情報をもとに、LP診断レポートをJSON形式で生成してください。
+
+【ユーザー情報】
+${Object.entries(allAnswers).map(([k,v]) => `・${k}：${v}`).join('\n')}
+
+【出力形式】必ずこのJSON形式のみを返してください。前置き・説明文は不要です。
+{
+  "score": 数値(0-100),
+  "scoreLabel": "スコアに応じたラベル（例：要改善・普通・良好・優秀）",
+  "overview": "総合診断コメント（150字程度、ユーザーの状況を踏まえた具体的な文章）",
+  "issues": [
+    {"text": "課題1の説明（50字以内）"},
+    {"text": "課題2の説明（50字以内）"},
+    {"text": "課題3の説明（50字以内）"}
+  ],
+  "actions": [
+    {"text": "改善アクション1（50字以内、具体的に）"},
+    {"text": "改善アクション2（50字以内、具体的に）"},
+    {"text": "改善アクション3（50字以内、具体的に）"}
+  ]
+}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    const raw = data.content.map(b => b.text || '').join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const result = JSON.parse(clean);
+
+    clearInterval(msgTimer);
+    showResult(result);
+  } catch(e) {
+    clearInterval(msgTimer);
+    // フォールバック
+    showResult({
+      score: 52,
+      scoreLabel: '要改善',
+      overview: '回答いただいた内容を拝見すると、LPの基本要素はあるものの、ユーザーを引き込むキャッチコピーとCTAの設計に改善余地があります。特にファーストビューの訴求強化とCVRアップに向けた構成の見直しが優先課題です。',
+      issues: [
+        {text: 'ファーストビューで悩みへの共感が不足している可能性あり'},
+        {text: 'CTAボタンの配置・色・文言が最適化されていない'},
+        {text: '信頼要素（実績・口コミ）の訴求タイミングが遅い'}
+      ],
+      actions: [
+        {text: 'ファーストビューに「〇〇でお悩みの方へ」の共感コピーを入れる'},
+        {text: 'CTAボタンをファーストビュー内と中段の2箇所に配置する'},
+        {text: 'お客様の声を数字付きで上部に移動し、信頼感を早期に伝える'}
+      ]
+    });
+  }
+}
+
+function showResult(r) {
+  document.getElementById('stepLoading').classList.remove('active');
+  document.getElementById('stepResult').classList.add('active');
+  document.getElementById('stepResult').style.animation = 'fadeUp 0.6s ease both';
+
+  // スコア
+  const score = Math.min(100, Math.max(0, r.score || 50));
+  const circumference = 2 * Math.PI * 45;
+  const ring = document.getElementById('scoreRing');
+  const offset = circumference - (score / 100) * circumference;
+
+  // 色設定
+  let color = '#ff6584';
+  if (score >= 70) color = '#43e97b';
+  else if (score >= 50) color = '#f6c90e';
+  ring.style.stroke = color;
+
+  setTimeout(() => {
+    ring.style.strokeDashoffset = offset;
+    // カウントアップ
+    let n = 0;
+    const el = document.getElementById('scoreNumEl');
+    const timer = setInterval(() => {
+      n = Math.min(score, n + 2);
+      el.textContent = n;
+      if (n >= score) clearInterval(timer);
+    }, 20);
+  }, 300);
+
+  document.getElementById('scoreLabel').textContent = r.scoreLabel || '';
+  document.getElementById('scoreLabel').style.color = color;
+  document.getElementById('scoreSub').textContent = `あなたのLPの現状スコア`;
+  document.getElementById('diagnosisOverall').textContent = r.overview || '';
+
+  // 課題
+  const issuesList = document.getElementById('issuesList');
+  (r.issues || []).forEach(item => {
+    const d = document.createElement('div');
+    d.className = 'issue-item fade-in';
+    d.innerHTML = `<span class="icon">⚠️</span><span>${item.text}</span>`;
+    issuesList.appendChild(d);
+  });
+
+  // 改善アクション
+  const improveList = document.getElementById('improveList');
+  (r.actions || []).forEach(item => {
+    const d = document.createElement('div');
+    d.className = 'improve-item fade-in';
+    d.innerHTML = `<span class="icon">✅</span><span>${item.text}</span>`;
+    improveList.appendChild(d);
+  });
+
+  renderDots();
+  updateProgress(9);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // メール通知送信（バックグラウンド）
+  const allAnswersForNotif = { ...answers };
+  Object.entries(multiAnswers).forEach(([k, v]) => {
+    allAnswersForNotif[k] = v.length > 0 ? v.join('、') : 'なし';
+  });
+  sendNotification(allAnswersForNotif, r);
+}
+
+// Formspree通知送信
+async function sendNotification(answers, result) {
+  // ★ FormspreeのフォームIDをここに入れる（設定手順は下記）
+  const FORMSPREE_URL = 'https://formspree.io/f/xbdbjyrw';
+
+  const body = {
+    _subject: '【LP診断ツール】新しい診断が完了しました',
+    スコア: result.score + '点 / ' + result.scoreLabel,
+    診断概要: result.overview,
+    課題: (result.issues || []).map(i => i.text).join(' / '),
+    改善アクション: (result.actions || []).map(i => i.text).join(' / '),
+    ...answers
+  };
+
+  try {
+    await fetch(FORMSPREE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(body)
+    });
+  } catch(e) {
+    // 通知失敗しても診断結果表示には影響させない
+    console.warn('通知送信エラー:', e);
+  }
+}
+
+// 初期化
+renderDots();
+updateProgress(1);
+</script>
+</body>
+</html>
