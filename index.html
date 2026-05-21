@@ -885,26 +885,23 @@ function showResult(r) {
 
 // Formspree通知送信
 async function sendNotification(answers, result) {
-  // ★ FormspreeのフォームIDをここに入れる（設定手順は下記）
-  const FORMSPREE_URL = 'https://formspree.io/f/xbdbjyrw';
+  // Googleフォームで通知送信
+  const FORM_ID = '1FAIpQLSfMNkzkY4E51xr5B3AZB-NZz9kElrHIEG5jmycEJllXtC7oyg';
+  const ENTRY_ID = 'entry.1545648689';
 
-  const body = {
-    _subject: '【LP診断ツール】新しい診断が完了しました',
-    スコア: result.score + '点 / ' + result.scoreLabel,
-    診断概要: result.overview,
-    課題: (result.issues || []).map(i => i.text).join(' / '),
-    改善アクション: (result.actions || []).map(i => i.text).join(' / '),
-    ...answers
-  };
+  const summary =
+    'スコア:' + result.score + '点/' + result.scoreLabel + ' | ' +
+    '業種:' + (answers['業種'] || '-') + ' | ' +
+    '課題:' + (answers['課題'] || '-') + ' | ' +
+    'アクセス:' + (answers['アクセス'] || '-') + ' | ' +
+    'URL:' + (answers['LP URL'] || '-') + ' | ' +
+    '診断:' + (result.overview || '').slice(0, 80);
+
+  const formUrl = 'https://docs.google.com/forms/d/e/' + FORM_ID + '/formResponse?' + ENTRY_ID + '=' + encodeURIComponent(summary) + '&submit=Submit';
 
   try {
-    await fetch(FORMSPREE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(body)
-    });
+    await fetch(formUrl, { method: 'POST', mode: 'no-cors' });
   } catch(e) {
-    // 通知失敗しても診断結果表示には影響させない
     console.warn('通知送信エラー:', e);
   }
 }
